@@ -1,0 +1,102 @@
+
+  - name: Setup
+    hosts: localhost
+    connection: localhost
+
+    tasks:
+    - name: create a VPC
+      amazon.aws.ec2_vpc_net:
+        name: my_vpc
+        cidr_block: 10.10.0.0/16
+        region: us-east-1
+        tags:
+          module: ec2_vpc_net
+      register: vpc
+
+    - name: create a subnet
+      amazon.aws.ec2_vpc_subnet:
+        vpc_id: "{{ vpc.vpc.id }}"
+        cidr: 10.10.0.0/24
+        region: us-east-1
+        tags:
+          Name: my_subnet
+          module: ec2_vpc_subnet
+      register: subnet
+    
+    - name: create internet gateway
+      amazon.aws.ec2_vpc_igw:
+        vpc_id: "{{ vpc.vpc.id }}"
+        region: us-east-1
+        tags:
+          Name: my_igw
+          module: ec2_vpc_igw
+      register: igw
+
+    - name: create route table
+      amazon.aws.ec2_vpc_route_table:
+        vpc_id: "{{ vpc.vpc.id }}"
+        region: us-east-1
+        tags:
+          Name: my_route_table
+          module: ec2_vpc_route_table
+        routes:
+          - dest: 0.0.0.0/0
+            gateway_id: "{{ igw.gateway_id }}"
+        subnets:
+          - "{{ subnet.subnet.id }}"
+      register: route_table
+
+    - name: create security group
+      amazon.aws.ec2_group:
+        name: my_security_group
+        description: my_security_group
+        vpc_id: "{{ vpc.vpc.id }}"
+        region: us-east-1
+        tags:
+          Name: my_security_group
+          module: ec2_group
+        rules:
+          - proto: tcp
+            from_port: 22
+            to_port: 22
+            cidr_ip: 0.0.0.0/0
+          - proto: all
+            cidr_ip: 0.0.0.0/0
+      register: security_group
+
+    - name: create ec2 
+      amazon.aws.ec2_instance:
+        key_name: lara-us-east-1 # replace with your key name
+        instance_type: t2.micro
+        image_id: ami-0c7217cdde317cfec
+        vpc_subnet_id: "{{ subnet.subnet.id }}"
+        security_group: "{{ security_group.group_id }}"
+        network:
+          assign_public_ip: true
+        region: us-east-1
+        user_data: |
+          #!/bin/bash
+          sudo apt-get update
+          sudo apt-get install -y ca-certificates curl gnupg
+          sudo install -m 0755 -d /etc/apt/keyrings
+          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+          sudo chmod a+r /etc/apt/keyrings/docker.gpg
+
+          # Add the repository to Apt sources:
+          echo \
+            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+            $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+            sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+          sudo apt-get update
+          # Install Docker Engine
+          sudo apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin     docker-compose-plugin
+          echo "Docker installed"
+
+          sudo docker pull laratunc/my-app
+          echo "Docker image pulled"
+          sudo docker run -d -p 3000:3000 laratunc/my-app
+          echo "Docker container running"
+        tags:
+          Name: my_ec2
+          module: ec2 
+
