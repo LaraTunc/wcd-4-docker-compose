@@ -7,6 +7,7 @@ ENV PATH /app/node_modules/.bin:$PATH
 # install app dependencies
 COPY package.json ./
 COPY yarn.lock ./
+COPY client/build ./client/build
 RUN yarn 
 RUN yarn global add react-scripts@4.0.3 
 
