@@ -10,15 +10,15 @@ router.get("/", async (req, res, next) => {
 });
 
 /* GET new command page */
-router.get("/newcommand", (req, res, next) => {
-  res.render("newcommand");
+router.get("/newquote", (req, res, next) => {
+  res.render("newquote");
 });
 
-router.post("/newcommand", async (req, res, next) => {
+router.post("/newquote", async (req, res, next) => {
   // Extremely simple implementation to get a command in the database
   const quoteData = {
-    quote: req.body.command,
-    author: req.body.description,
+    quote: req.body.quote,
+    author: req.body.author,
   };
   const quote = new FamousQuoteModel(quoteData);
   try {
