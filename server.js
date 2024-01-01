@@ -1,24 +1,35 @@
 const express = require("express"),
-  fs = require("fs"),
+  exphbs = require("express-handlebars"),
   path = require("path"),
   config = require("./lib/configLoader"),
   port = process.env.PORT || 3000,
   db = require("./lib/database"),
   routes = require("./routes/index"),
-  bodyParser = require("body-parser"),
+  favicon = require("serve-favicon"),
+  cookieParser = require("cookie-parser"),
+  Handlebars = require("handlebars"),
+  {
+    allowInsecurePrototypeAccess,
+  } = require("@handlebars/allow-prototype-access"),
   app = express();
 
-// Body parser middleware
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-
-// Serve React frontend from the build folder
-app.use(express.static(path.join(__dirname, "client/build")));
-
-// This route serves the static React app
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "client/build", "index.html"));
+// view engine setup
+const hbs = exphbs.create({
+  extname: ".hbs",
+  defaultLayout: "masterLayout",
+  // https://www.npmjs.com/package/@handlebars/allow-prototype-access
+  // Need to add due to security change in Handlebars 4.6+
+  handlebars: allowInsecurePrototypeAccess(Handlebars),
 });
+app.engine("hbs", hbs.engine);
+app.set("view engine", "hbs");
+app.set("views", path.join(__dirname, "views"));
+
+app.use(favicon(__dirname + "/public/images/favicon.ico"));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+app.use(express.static(path.join(__dirname, "public")));
 
 //Pass database config settings
 db.init(config.databaseConfig);

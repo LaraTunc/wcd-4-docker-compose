@@ -1,38 +1,33 @@
-const express = require('express'),
+const express = require("express"),
   router = express.Router(),
-  getDockerCommands = require('../lib/dockerCommandsRepository'),
-  DockerCommandModel = require('../models/dockerCommand');
+  getFamousQuotes = require("../lib/famousQuotesRepository"),
+  FamousQuoteModel = require("../models/famousQuote");
 
 /* GET home page. */
-router.get('/', async (req, res, next) => {
-  const commands = await getDockerCommands();
-  res.render('index', { dockerCommands: commands });
+router.get("/", async (req, res, next) => {
+  const quotes = await getFamousQuotes();
+  res.render("index", { famousQuotes: quotes });
 });
 
 /* GET new command page */
-router.get('/newcommand', (req, res, next) => {
-  res.render('newcommand');
+router.get("/newcommand", (req, res, next) => {
+  res.render("newcommand");
 });
 
-router.post('/newcommand', async (req, res, next) => {
+router.post("/newcommand", async (req, res, next) => {
   // Extremely simple implementation to get a command in the database
-  const commandData = {
-    command: req.body.command,
-    description: req.body.description,
-    examples: [{
-      example: req.body.example,
-      description: req.body.ex_description
-    }]
-  }
-  const command = new DockerCommandModel(commandData);
+  const quoteData = {
+    quote: req.body.command,
+    author: req.body.description,
+  };
+  const quote = new FamousQuoteModel(quoteData);
   try {
-    const cmd = await command.save();
-    console.log(cmd.command + " saved to commands collection.");
-  }
-  catch (err) {
+    const cmd = await quote.save();
+    console.log(cmd.quote + " saved to quotes collection.");
+  } catch (err) {
     console.log(err);
   }
-  res.redirect('/');
+  res.redirect("/");
 });
 
 module.exports = router;
