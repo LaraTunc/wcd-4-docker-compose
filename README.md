@@ -51,7 +51,7 @@ terraform apply --auto-approve
    To tear down the provisioned resources, run the following.
 
 ```sh
-terraform destroy
+terraform destroy --auto-approve
 ```
 
 # Architecture
