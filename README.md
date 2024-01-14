@@ -1,3 +1,7 @@
+# Docker Compose
+
+This project contains an app
+
 # To run the app locally
 
 ```sh
@@ -18,6 +22,7 @@ https://hub.docker.com/r/laratunc/my-app
 1. Run `ansible-playbook setup.yml` to create a vpc, public subnet, igw, route table, security group and an ec2 instance in your aws profile (dependency: ansible).
 2. Find the Public IPv4 address of the new ec2 instance in your account. It should be named `my_ec2`.
 3. On your browser open `http:<public-ipv4-address-of-your-instance>:3000` and you should see my application that says `Famous Quotes`.
+
    <img src="public/images/app_screenshot.png" alt="app_screenshot" width="400" style="margin: 0 auto;"/>
    <img src="public/images/app.gif" alt="app_gif" width="400" style="margin: 0 auto;"/>
 

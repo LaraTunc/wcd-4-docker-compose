@@ -1,16 +1,14 @@
 FROM node:16-alpine
-# Example modification to invalidate cache (add a dummy command)
-RUN echo 'Forcing cache invalidatiozsdfdsfsn'
 WORKDIR /app
 
 # add `/app/node_modules/.bin` to $PATH
 ENV PATH /app/node_modules/.bin:$PATH
 
-
 # install app dependencies
 COPY package.json ./
 COPY yarn.lock ./
-RUN yarn install 
+RUN yarn 
+RUN yarn global add react-scripts@4.0.3 
 
 # add app
 COPY . .
